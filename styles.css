@@ -294,11 +294,24 @@ a:hover { color: var(--primary); }
 /* ============================================
    URGENCY BANNER
    ============================================ */
-.urgency-banner { background: var(--dark); border-bottom: 2px solid var(--primary); padding: 20px 0; }
+.urgency-banner { background: var(--dark); border-bottom: 2px solid var(--primary); padding: 24px 0; }
 .urgency-content { display: flex; justify-content: center; align-items: center; gap: 24px; flex-wrap: wrap; }
 .urgency-label { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--primary); display: block; }
 .urgency-text { font-size: 18px; font-weight: 500; color: var(--white); }
 .urgency-text strong { font-size: 28px; color: var(--primary); }
+.urgency-banner .urgency-label { color: var(--primary); }
+.urgency-banner .urgency-text strong { color: var(--primary); }
+.btn-amber { background: var(--primary); color: var(--dark); border-color: var(--primary); font-weight: 800; }
+.btn-amber:hover { background: #d97706; border-color: #d97706; color: var(--dark); transform: translateY(-1px); }
+
+/* ============================================
+   PROMISE BANNER
+   ============================================ */
+.promise-banner { padding: 48px 0; background: var(--gray-50); border-top: 3px solid var(--primary); border-bottom: 1px solid var(--gray-200); }
+.promise-content { text-align: center; max-width: 600px; margin: 0 auto; }
+.promise-badge { display: inline-block; background: var(--primary-light); color: var(--primary); padding: 6px 16px; border-radius: 50px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 16px; }
+.promise-content h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; color: var(--dark); margin-bottom: 12px; }
+.promise-content p { font-size: 16px; color: var(--gray-600); line-height: 1.7; }
 
 /* ============================================
    SECTION HEADERS
@@ -373,6 +386,17 @@ a:hover { color: var(--primary); }
 .proof-icon-wrapper { width: 80px; height: 80px; background: var(--primary-light); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--primary-dark); }
 .proof-content h3 { font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 10px; }
 .proof-content p { font-size: 14px; color: var(--gray-600); line-height: 1.6; }
+/* Before/After Comparison */
+.proof-comparison { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.proof-before, .proof-after { text-align: center; flex: 1; }
+.proof-ba-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.proof-before .proof-ba-label { color: #ef4444; }
+.proof-after .proof-ba-label { color: #10b981; }
+.proof-ba-icon { width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.proof-ba-icon.worn { background: #fef2f2; border: 2px dashed #fca5a5; }
+.proof-ba-icon.fixed { background: #f0fdf4; border: 2px solid #86efac; }
+.proof-arrow { font-size: 24px; color: var(--gray-400); flex-shrink: 0; }
+@media (max-width: 768px) { .proof-comparison { gap: 8px; } .proof-ba-icon { width: 48px; height: 48px; } }
 @media (max-width: 1024px) { .proof-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) { .proof-grid { grid-template-columns: 1fr; } }
 
