@@ -1,444 +1,340 @@
-// Belmont Auto Repair - Interactive Scripts
+/* ============================================
+   BELMONT AUTO REPAIR — "THE HERITAGE SHOP"
+   Interactive JavaScript
+   ============================================ */
 
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    // ============================================
-    // MOBILE MENU TOGGLE (smooth max-height transition)
-    // ============================================
-    const mobileToggle = document.getElementById('mobileToggle');
-    const navLinks = document.getElementById('navLinks');
+  // ---- DOM Elements ----
+  const header = document.getElementById('siteHeader');
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const scrollProgress = document.getElementById('scrollProgress');
+  const backToTop = document.getElementById('backToTop');
+  const openIndicator = document.getElementById('openIndicator');
+  const contactForm = document.getElementById('contactForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const formFallback = document.getElementById('formFallback');
+  const currentYear = document.getElementById('currentYear');
 
-    mobileToggle.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
-        mobileToggle.classList.toggle('active');
-    });
+  // ---- Set Current Year ----
+  if (currentYear) {
+    currentYear.textContent = new Date().getFullYear();
+  }
 
-    navLinks.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.classList.remove('active');
-            mobileToggle.classList.remove('active');
-        });
-    });
+  // ---- Scroll Progress Bar ----
+  function updateScrollProgress() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    scrollProgress.style.width = scrollPercent + '%';
+  }
 
-    // ============================================
-    // NAVBAR SCROLL EFFECT
-    // ============================================
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 50);
-    }, { passive: true });
+  // ---- Header Scroll Effect ----
+  let lastScrollY = 0;
 
-    // ============================================
-    // SMOOTH SCROLL FOR ANCHOR LINKS
-    // ============================================
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-    });
+  function updateHeader() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    // ============================================
-    // SCROLL PROGRESS BAR
-    // ============================================
-    const scrollProgress = document.getElementById('scrollProgress');
-
-    function updateScrollProgress() {
-        const scrollTop = window.scrollY;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-        scrollProgress.style.width = scrollPercent + '%';
+    if (scrollTop > 50) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
     }
 
-    window.addEventListener('scroll', updateScrollProgress, { passive: true });
+    lastScrollY = scrollTop;
+  }
 
-    // ============================================
-    // BACK TO TOP BUTTON
-    // ============================================
-    const backToTop = document.getElementById('backToTop');
-
-    function toggleBackToTop() {
-        backToTop.classList.toggle('visible', window.scrollY > 400);
+  // ---- Back to Top Button ----
+  function updateBackToTop() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    if (scrollTop > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
     }
+  }
 
-    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+  backToTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 
-    backToTop.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+  // ---- Scroll Event (Throttled) ----
+  let scrollTicking = false;
 
-    // ============================================
-    // ANIMATED COUNTER (IntersectionObserver)
-    // ============================================
-    function animateCounter(el) {
-        const target = parseInt(el.getAttribute('data-count'), 10);
-        if (isNaN(target)) return;
-
-        const duration = 2000;
-        const startTime = performance.now();
-        const originalText = el.textContent;
-
-        function update(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            // Ease out cubic
-            const eased = 1 - Math.pow(1 - progress, 3);
-            const current = Math.round(eased * target);
-
-            // Preserve "+" suffix if original had it
-            if (originalText.includes('+')) {
-                el.textContent = current.toLocaleString() + '+';
-            } else {
-                el.textContent = current.toLocaleString();
-            }
-
-            if (progress < 1) {
-                requestAnimationFrame(update);
-            }
-        }
-
-        requestAnimationFrame(update);
+  window.addEventListener('scroll', function () {
+    if (!scrollTicking) {
+      window.requestAnimationFrame(function () {
+        updateScrollProgress();
+        updateHeader();
+        updateBackToTop();
+        scrollTicking = false;
+      });
+      scrollTicking = true;
     }
+  }, { passive: true });
 
-    // Observer for stats numbers
-    const statsObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('revealed');
-                animateCounter(entry.target);
-                statsObserver.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.5 });
+  // ---- Hamburger Menu ----
+  function toggleMobileMenu() {
+    const isActive = hamburger.classList.toggle('active');
+    mobileMenu.classList.toggle('active');
+    hamburger.setAttribute('aria-expanded', isActive);
+    mobileMenu.setAttribute('aria-hidden', !isActive);
+    document.body.style.overflow = isActive ? 'hidden' : '';
+  }
 
-    document.querySelectorAll('.stats-number[data-count]').forEach(el => {
-        statsObserver.observe(el);
-    });
+  function closeMobileMenu() {
+    hamburger.classList.remove('active');
+    mobileMenu.classList.remove('active');
+    hamburger.setAttribute('aria-expanded', 'false');
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
 
-    // ============================================
-    // INTERSECTION OBSERVER FOR ANIMATIONS
-    // ============================================
-    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
+  hamburger.addEventListener('click', toggleMobileMenu);
 
-    document.querySelectorAll('.service-card, .review-card, .why-feature, .detail-card, .proof-card, .trust-strip-badge').forEach(el => {
-        observer.observe(el);
-    });
+  // Close mobile menu on link click
+  const mobileLinks = mobileMenu.querySelectorAll('a');
+  mobileLinks.forEach(function (link) {
+    link.addEventListener('click', closeMobileMenu);
+  });
 
-    // ============================================
-    // STAGGERED ANIMATIONS
-    // ============================================
-    function applyStaggeredDelays(selector, baseDelay) {
-        document.querySelectorAll(selector).forEach((el, index) => {
-            el.style.animationDelay = (index * baseDelay) + 's';
-        });
+  // Close mobile menu on Escape key
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+      closeMobileMenu();
     }
+  });
 
-    applyStaggeredDelays('.service-card', 0.1);
-    applyStaggeredDelays('.review-card', 0.1);
-    applyStaggeredDelays('.why-feature', 0.15);
-    applyStaggeredDelays('.detail-card', 0.15);
-    applyStaggeredDelays('.proof-card', 0.1);
-    applyStaggeredDelays('.trust-strip-badge', 0.1);
+  // ---- Smooth Scroll for Anchor Links ----
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      const targetId = this.getAttribute('href');
+      if (targetId === '#') return;
 
-    // ============================================
-    // PARALLAX HERO (subtle)
-    // ============================================
-    const heroContent = document.querySelector('.hero-content');
-    const hero = document.querySelector('.hero');
-
-    if (heroContent && hero) {
-        window.addEventListener('scroll', () => {
-            const scrolled = window.scrollY;
-            const heroHeight = hero.offsetHeight;
-            if (scrolled < heroHeight) {
-                const parallaxOffset = scrolled * 0.3;
-                heroContent.style.transform = 'translateY(' + parallaxOffset + 'px)';
-                heroContent.style.opacity = 1 - (scrolled / heroHeight) * 0.5;
-            }
-        }, { passive: true });
-    }
-
-    // ============================================
-    // HERO PARTICLES
-    // ============================================
-    const heroParticles = document.getElementById('heroParticles');
-
-    if (heroParticles) {
-        for (let i = 0; i < 20; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'hero-particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.top = Math.random() * 100 + '%';
-            particle.style.animationDelay = (Math.random() * 6) + 's';
-            particle.style.animationDuration = (4 + Math.random() * 4) + 's';
-            particle.style.width = (2 + Math.random() * 4) + 'px';
-            particle.style.height = particle.style.width;
-            heroParticles.appendChild(particle);
-        }
-    }
-
-    // ============================================
-    // CTA PULSE (auto-add after 3 seconds)
-    // ============================================
-    setTimeout(() => {
-        const heroCallBtn = document.getElementById('heroCallBtn');
-        if (heroCallBtn && !heroCallBtn.classList.contains('btn-pulse')) {
-            heroCallBtn.classList.add('btn-pulse');
-        }
-    }, 3000);
-
-    // ============================================
-    // ACTIVE NAV HIGHLIGHTING (scroll-based)
-    // ============================================
-    const sections = document.querySelectorAll('section[id]');
-    const navLinksAll = document.querySelectorAll('.nav-links a[data-section]');
-
-    function highlightActiveNav() {
-        const scrollPos = window.scrollY + 150;
-
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionId = section.getAttribute('id');
-
-            if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-                navLinksAll.forEach(link => {
-                    link.classList.remove('nav-active');
-                    if (link.getAttribute('data-section') === sectionId) {
-                        link.classList.add('nav-active');
-                    }
-                });
-            }
-        });
-    }
-
-    window.addEventListener('scroll', highlightActiveNav, { passive: true });
-
-    // ============================================
-    // "EST. 1970s" ANIMATION IN LOGO
-    // ============================================
-    const logoEst = document.querySelector('.logo-est');
-
-    if (logoEst) {
-        setTimeout(() => {
-            logoEst.classList.add('animate-est');
-        }, 1500);
-    }
-
-    // ============================================
-    // OPEN/CLOSED INDICATOR
-    // ============================================
-    function updateOpenStatus() {
-        const statusEl = document.getElementById('openStatus');
-        if (!statusEl) return;
-        const now = new Date();
-        const day = now.getDay();
-        const hour = now.getHours();
-        let isOpen = false;
-        if (day === 1 && hour >= 8 && hour < 16) isOpen = true;
-        if (day >= 2 && day <= 5 && hour >= 8 && hour < 17) isOpen = true;
-
-        if (isOpen) {
-            statusEl.innerHTML = '<span style="color: #10b981; font-weight: 700;">OPEN NOW</span> Mon: 8AM-4PM | Tue-Fri: 8AM-5PM';
-        } else {
-            statusEl.innerHTML = '<span style="color: #ef4444; font-weight: 700;">CLOSED</span> Mon: 8AM-4PM | Tue-Fri: 8AM-5PM';
-        }
-
-        // Also update contact form hours indicator
-        const contactOpenStatus = document.getElementById('contactOpenStatus');
-        if (contactOpenStatus) {
-            if (isOpen) {
-                contactOpenStatus.innerHTML = '<span style="color: #10b981;">OPEN NOW</span> - We\'ll call you back within 1 hour';
-            } else {
-                contactOpenStatus.innerHTML = '<span style="color: #ef4444;">Currently CLOSED</span> - We\'ll call you on our next business day';
-            }
-        }
-
-        // Also update mobile hours
-        const mobileHours = document.getElementById('mobileHours');
-        if (mobileHours) {
-            if (isOpen) {
-                mobileHours.innerHTML = '<span style="color: #10b981; font-weight: 700;">OPEN</span> until ' + (day === 1 ? '4PM' : '5PM');
-            } else {
-                mobileHours.textContent = 'Opens Mon 8AM';
-            }
-        }
-    }
-    updateOpenStatus();
-    setInterval(updateOpenStatus, 60000);
-
-    // ============================================
-    // FORM VALIDATION (real-time)
-    // ============================================
-    const contactForm = document.getElementById('contactForm');
-    const nameInput = document.getElementById('name');
-    const phoneInput = document.getElementById('phone');
-    const emailInput = document.getElementById('email');
-    const nameError = document.getElementById('nameError');
-    const phoneError = document.getElementById('phoneError');
-    const emailError = document.getElementById('emailError');
-
-    function validateName() {
-        const value = nameInput.value.trim();
-        if (!value) {
-            nameInput.classList.remove('valid');
-            nameInput.classList.add('invalid');
-            nameError.textContent = 'Name is required';
-            return false;
-        } else if (value.length < 2) {
-            nameInput.classList.remove('valid');
-            nameInput.classList.add('invalid');
-            nameError.textContent = 'Name must be at least 2 characters';
-            return false;
-        }
-        nameInput.classList.remove('invalid');
-        nameInput.classList.add('valid');
-        nameError.textContent = '';
-        return true;
-    }
-
-    function validatePhone() {
-        const value = phoneInput.value.trim();
-        const phoneRegex = /^[\d\s\-\(\)\+]{7,}$/;
-        if (!value) {
-            phoneInput.classList.remove('valid');
-            phoneInput.classList.add('invalid');
-            phoneError.textContent = 'Phone number is required';
-            return false;
-        } else if (!phoneRegex.test(value)) {
-            phoneInput.classList.remove('valid');
-            nameInput.classList.remove('valid');
-            phoneInput.classList.add('invalid');
-            phoneError.textContent = 'Enter a valid phone number';
-            return false;
-        }
-        phoneInput.classList.remove('invalid');
-        phoneInput.classList.add('valid');
-        phoneError.textContent = '';
-        return true;
-    }
-
-    function validateEmail() {
-        const value = emailInput.value.trim();
-        // Email is optional
-        if (!value) {
-            emailInput.classList.remove('invalid', 'valid');
-            emailError.textContent = '';
-            return true;
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-            emailInput.classList.remove('valid');
-            emailInput.classList.add('invalid');
-            emailError.textContent = 'Enter a valid email address';
-            return false;
-        }
-        emailInput.classList.remove('invalid');
-        emailInput.classList.add('valid');
-        emailError.textContent = '';
-        return true;
-    }
-
-    // Real-time validation on blur/input
-    nameInput.addEventListener('blur', validateName);
-    nameInput.addEventListener('input', function() {
-        if (this.classList.contains('invalid')) validateName();
-    });
-
-    phoneInput.addEventListener('blur', validatePhone);
-    phoneInput.addEventListener('input', function() {
-        if (this.classList.contains('invalid')) validatePhone();
-    });
-
-    emailInput.addEventListener('blur', validateEmail);
-    emailInput.addEventListener('input', function() {
-        if (this.classList.contains('invalid')) validateEmail();
-    });
-
-    // Form submit handler
-    contactForm.addEventListener('submit', function(e) {
+      const target = document.querySelector(targetId);
+      if (target) {
         e.preventDefault();
+        const headerHeight = header.offsetHeight;
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
+        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+      }
+    });
+  });
 
-        const isNameValid = validateName();
-        const isPhoneValid = validatePhone();
-        const isEmailValid = validateEmail();
+  // ---- IntersectionObserver for Animations ----
+  const animatedElements = document.querySelectorAll('.animate-on-scroll');
 
-        if (!isNameValid || !isPhoneValid || !isEmailValid) return;
+  const animationObserver = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          // Stagger animation for siblings
+          const parent = entry.target.parentElement;
+          const siblings = parent.querySelectorAll('.animate-on-scroll');
+          let index = Array.from(siblings).indexOf(entry.target);
 
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
-        const subject = encodeURIComponent('Appointment Request - ' + (data.make || 'Vehicle') + ' ' + (data.year || ''));
-        const body = encodeURIComponent(
-            'Name: ' + data.name + '\nPhone: ' + data.phone + '\nEmail: ' + (data.email || 'N/A') + '\n' +
-            'Vehicle: ' + (data.make || 'N/A') + ' ' + (data.year || '') + '\nService: ' + (data.service || 'N/A') + '\n' +
-            'Issue: ' + (data.message || 'N/A') + '\n\nPlease call me to schedule an appointment.'
-        );
-        window.location.href = 'mailto:info@belmontautorepair.com?subject=' + subject + '&body=' + body;
+          setTimeout(
+            function () {
+              entry.target.classList.add('is-visible');
+            },
+            index * 100
+          );
 
-        // Fallback if email client doesn't open
-        setTimeout(() => {
-            if (!document.hidden) {
-                const formNote = document.querySelector('.form-note');
-                if (formNote) {
-                    const originalNote = formNote.textContent;
-                    formNote.innerHTML = 'Email didn\'t open? Call us directly at <a href="tel:5624390291" style="color: var(--primary); font-weight: 700;">(562) 439-0291</a>';
-                    setTimeout(() => {
-                        formNote.textContent = originalNote;
-                    }, 8000);
-                }
-            }
-        }, 2000);
+          animationObserver.unobserve(entry.target);
+        }
+      });
+    },
+    {
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
+    }
+  );
 
-        const btn = this.querySelector('button[type="submit"]');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '&#10003; Request Sent!';
-        btn.style.background = '#10b981';
-        btn.style.borderColor = '#10b981';
-        btn.style.color = '#fff';
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.style.background = '';
-            btn.style.borderColor = '';
-            btn.style.color = '';
-            this.reset();
-            // Clear validation styles
-            nameInput.classList.remove('valid', 'invalid');
-            phoneInput.classList.remove('valid', 'invalid');
-            emailInput.classList.remove('valid', 'invalid');
-            nameError.textContent = '';
-            phoneError.textContent = '';
-            emailError.textContent = '';
-        }, 3000);
+  animatedElements.forEach(function (el) {
+    animationObserver.observe(el);
+  });
+
+  // ---- Open/Closed Indicator ----
+  function updateOpenStatus() {
+    if (!openIndicator) return;
+
+    const now = new Date();
+    // Convert to Pacific Time
+    const pacificOptions = { timeZone: 'America/Los_Angeles' };
+    const dayStr = now.toLocaleDateString('en-US', { weekday: 'long', ...pacificOptions });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, ...pacificOptions });
+    const currentHour = parseInt(timeStr.split(':')[0], 10);
+    const currentMinute = parseInt(timeStr.split(':')[1], 10);
+    const currentTime = currentHour * 60 + currentMinute;
+
+    let isOpen = false;
+
+    // Monday: 8AM - 4PM (8:00 - 16:00)
+    if (dayStr === 'Monday') {
+      isOpen = currentTime >= 480 && currentTime < 960;
+    }
+    // Tuesday - Friday: 8AM - 5PM (8:00 - 17:00)
+    else if (['Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(dayStr)) {
+      isOpen = currentTime >= 480 && currentTime < 1020;
+    }
+    // Saturday - Sunday: Closed
+    else {
+      isOpen = false;
+    }
+
+    const dotEl = openIndicator.querySelector('.open-dot');
+    const textEl = openIndicator.querySelector('.open-text');
+
+    if (isOpen) {
+      openIndicator.classList.remove('closed');
+      textEl.textContent = 'Open Now';
+    } else {
+      openIndicator.classList.add('closed');
+      textEl.textContent = 'Closed';
+    }
+  }
+
+  // Update immediately and then every 60 seconds
+  updateOpenStatus();
+  setInterval(updateOpenStatus, 60000);
+
+  // ---- Contact Form Handling ----
+  function validateForm() {
+    let isValid = true;
+    const fullName = document.getElementById('fullName');
+    const phone = document.getElementById('phone');
+
+    // Clear previous errors
+    document.querySelectorAll('.error').forEach(function (el) {
+      el.classList.remove('error');
     });
 
-    // ============================================
-    // CLICK-TO-CALL TRACKING WITH LOCATION
-    // ============================================
-    document.querySelectorAll('a[href^="tel:"]').forEach(link => {
-        link.addEventListener('click', () => {
-            let location = 'unknown';
-            if (link.closest('.hero')) location = 'hero';
-            else if (link.closest('.urgency-banner')) location = 'urgency-banner';
-            else if (link.closest('.featured-testimonial')) location = 'featured-testimonial';
-            else if (link.closest('.cta-section')) location = 'cta-section';
-            else if (link.closest('.mobile-cta')) location = 'mobile-cta';
-            else if (link.closest('.contact')) location = 'contact-section';
-            else if (link.closest('.footer')) location = 'footer';
+    if (!fullName.value.trim()) {
+      fullName.classList.add('error');
+      isValid = false;
+    }
 
-            if (typeof gtag === 'function') {
-                gtag('event', 'click_to_call', { business: 'Belmont Auto Repair', click_location: location });
+    if (!phone.value.trim()) {
+      phone.classList.add('error');
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  function buildMailtoLink() {
+    const fullName = document.getElementById('fullName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const vehicleMake = document.getElementById('vehicleMake').value.trim();
+    const year = document.getElementById('year').value.trim();
+    const serviceNeeded = document.getElementById('serviceNeeded').value;
+    const issue = document.getElementById('issue').value.trim();
+
+    const subject = encodeURIComponent('Appointment Request from ' + fullName);
+    const body = encodeURIComponent(
+      'Name: ' + fullName + '\n' +
+      'Phone: ' + phone + '\n' +
+      'Email: ' + (email || 'N/A') + '\n' +
+      'Vehicle: ' + (vehicleMake || 'N/A') + ' ' + (year || '') + '\n' +
+      'Service: ' + (serviceNeeded || 'Not specified') + '\n' +
+      'Issue: ' + (issue || 'Not described') + '\n\n' +
+      'Sent from belmontautorepair.com'
+    );
+
+    return 'mailto:info@belmontautorepair.com?subject=' + subject + '&body=' + body;
+  }
+
+  contactForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    // Show loading state
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoading = submitBtn.querySelector('.btn-loading');
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline';
+    submitBtn.disabled = true;
+
+    // Open mailto link
+    const mailtoLink = buildMailtoLink();
+
+    // Set a 2-second fallback to show phone number
+    const fallbackTimer = setTimeout(function () {
+      formFallback.style.display = 'block';
+    }, 2000);
+
+    // Open mail client
+    window.location.href = mailtoLink;
+
+    // Reset button after a delay
+    setTimeout(function () {
+      btnText.style.display = 'inline';
+      btnLoading.style.display = 'none';
+      submitBtn.disabled = false;
+      clearTimeout(fallbackTimer);
+    }, 3000);
+  });
+
+  // ---- Active Nav Highlighting ----
+  const sections = document.querySelectorAll('section[id]');
+
+  function highlightActiveNav() {
+    const scrollPos = window.pageYOffset + header.offsetHeight + 100;
+
+    sections.forEach(function (section) {
+      const top = section.offsetTop;
+      const height = section.offsetHeight;
+      const id = section.getAttribute('id');
+
+      // Check if section has a nav link
+      const navLink = document.querySelector('.nav-list a[href="#' + id + '"]');
+      if (!navLink) return;
+
+      if (scrollPos >= top && scrollPos < top + height) {
+        navLink.style.color = '#d97706';
+      } else {
+        navLink.style.color = '';
+      }
+    });
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!scrollTicking) {
+      window.requestAnimationFrame(function () {
+        highlightActiveNav();
+      });
+    }
+  }, { passive: true });
+
+  // ---- Lazy Load Google Maps ----
+  const mapContainer = document.querySelector('.map-container');
+  if (mapContainer) {
+    const mapObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            const iframe = mapContainer.querySelector('iframe');
+            if (iframe && iframe.dataset.src) {
+              iframe.src = iframe.dataset.src;
             }
+            mapObserver.unobserve(entry.target);
+          }
         });
-    });
+      },
+      { threshold: 0.1 }
+    );
+    mapObserver.observe(mapContainer);
+  }
 
+  // ---- Initialize on Load ----
+  updateScrollProgress();
+  updateHeader();
+  updateBackToTop();
+  highlightActiveNav();
 })();
