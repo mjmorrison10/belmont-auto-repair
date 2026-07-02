@@ -244,7 +244,7 @@
       'Sent from belmontautorepair.com'
     );
 
-    return 'mailto:info@belmontautorepair.com?subject=' + subject + '&body=' + body;
+    return 'mailto:[EMAIL ADDRESS]?subject=' + subject + '&body=' + body;
   }
 
   contactForm.addEventListener('submit', function (e) {
